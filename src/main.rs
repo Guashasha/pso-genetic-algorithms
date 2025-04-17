@@ -5,10 +5,13 @@ mod plotter;
 mod pso;
 
 const POPULATION_SIZE: usize = 500;
+const MAX_EVUALUATIONS: usize = 10000;
 
 fn main() {
-    let mut pso_population: Vec<Vec<f64>> = generate_initial_population();
-    let mut genetic_population: Vec<Vec<f64>> = generate_initial_population();
+    let genetic_stats = genetic::evolve(generate_initial_population());
+    let pso_stats = pso::evolve(generate_initial_population());
+
+    plotter::plot_comparison(&pso_stats, &genetic_stats);
 }
 
 fn evaluate(individual: &[f64]) -> f64 {
@@ -115,4 +118,20 @@ fn generate_individual() -> Vec<f64> {
         random_range(27.0..46.0),
         random_range(27.0..46.0),
     ]
+}
+
+struct EvolutionStats {
+    best: Vec<f64>,
+    worst: Vec<f64>,
+    middle: Vec<f64>,
+}
+
+impl EvolutionStats {
+    fn new() -> Self {
+        Self {
+            best: Vec::new(),
+            worst: Vec::new(),
+            middle: Vec::new(),
+        }
+    }
 }
