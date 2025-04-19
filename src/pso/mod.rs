@@ -47,7 +47,7 @@ pub fn evolve(population: Vec<Vec<f64>>) -> EvolutionStats {
         }
     }
 
-    todo!();
+    stats
 }
 
 impl Swarm {

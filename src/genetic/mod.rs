@@ -1,4 +1,6 @@
-pub fn evolve(population: &mut [Vec<f64>]) {
+use crate::EvolutionStats;
+
+pub fn evolve(population: Vec<Vec<f64>>) -> EvolutionStats {
     todo!();
 }
 

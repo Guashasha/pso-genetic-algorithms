@@ -11,7 +11,7 @@ fn main() {
     let genetic_stats = genetic::evolve(generate_initial_population());
     let pso_stats = pso::evolve(generate_initial_population());
 
-    plotter::plot_comparison(&pso_stats, &genetic_stats);
+    plotter::plot_comparison(pso_stats, genetic_stats);
 }
 
 fn evaluate(individual: &[f64]) -> f64 {
