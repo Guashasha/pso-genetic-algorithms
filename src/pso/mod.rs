@@ -43,7 +43,8 @@ pub fn evolve(population: Vec<Vec<f64>>) -> EvolutionStats {
         );
 
         for i in 0..swarm.population.len() {
-            current_evaluations += swarm.population[i].continue_movement(&swarm.best);
+            swarm.population[i].continue_movement(&swarm.best);
+            current_evaluations += 1;
         }
     }
 
@@ -82,39 +83,29 @@ impl Swarm {
 }
 
 impl Particle {
-    fn continue_movement(&mut self, global_best: &[f64]) -> usize {
-        let mut count = 0;
+    fn continue_movement(&mut self, global_best: &[f64]) {
+        let v1 = mult_vector(&self.velocity, INERTIA);
+        let v2 = mult_vector(
+            &sub_vectors(&self.best, &self.current),
+            MOVEMENT_VARIATION * PERSONAL_BEST_ATRACTION,
+        );
+        let v3 = mult_vector(
+            &sub_vectors(global_best, &self.current),
+            MOVEMENT_VARIATION * GLOBAL_BEST_ATRACTION,
+        );
+        let v4 = sum_vectors(&v1, &v2);
+        let new_velocity = sum_vectors(&v3, &v4);
+        let mut new_position = sum_vectors(&new_velocity, &self.current);
+        Self::comply_with_limits(&mut new_position);
 
-        loop {
-            let v1 = mult_vector(&self.velocity, INERTIA);
-            let v2 = mult_vector(
-                &sub_vectors(&self.best, &self.current),
-                MOVEMENT_VARIATION * PERSONAL_BEST_ATRACTION,
-            );
-            let v3 = mult_vector(
-                &sub_vectors(&global_best, &self.current),
-                MOVEMENT_VARIATION * GLOBAL_BEST_ATRACTION,
-            );
-            let v4 = sum_vectors(&v1, &v2);
-            let new_velocity = sum_vectors(&v3, &v4);
-            let mut new_position = sum_vectors(&new_velocity, &self.current);
-            Self::comply_with_limits(&mut new_position);
-
-            count += 1;
-            if valid_inputs(&self.current) {
-                let new_aptitude = evaluate(&new_position);
-                if self.best_aptitude > new_aptitude {
-                    self.best_aptitude = new_aptitude;
-                    self.best = new_position.clone();
-                }
-
-                self.current_aptitude = new_aptitude;
-                self.current = new_position;
-                return count;
-            }
-
-            println!("valores invalidos, continuando movimiento");
+        let new_aptitude = evaluate(&new_position);
+        if self.best_aptitude > new_aptitude {
+            self.best_aptitude = new_aptitude;
+            self.best = new_position.clone();
         }
+
+        self.current_aptitude = new_aptitude;
+        self.current = new_position;
     }
 
     fn comply_with_limits(position: &mut [f64]) {

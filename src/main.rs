@@ -1,3 +1,7 @@
+use std::{cmp, collections::HashMap};
+
+use csv::Error;
+
 use rand::random_range;
 
 mod genetic;
@@ -8,10 +12,18 @@ const POPULATION_SIZE: usize = 500;
 const MAX_EVUALUATIONS: usize = 10000;
 
 fn main() {
-    let genetic_stats = genetic::evolve(generate_initial_population());
+    let mut constraints = HashMap::new();
+    constraints.insert(0, 78.0..=102.0);
+    constraints.insert(1, 33.0..=45.0);
+    constraints.insert(2, 27.0..=45.0);
+    constraints.insert(3, 27.0..=45.0);
+    constraints.insert(4, 27.0..=45.0);
+
+    let genetic_stats = genetic::evolve(&mut generate_initial_population(), constraints);
     let pso_stats = pso::evolve(generate_initial_population());
 
-    plotter::plot_comparison(pso_stats, genetic_stats);
+    plotter::plot_comparison(&pso_stats, &genetic_stats);
+    create_csv(pso_stats, genetic_stats).expect("Error al crear el archivo csv");
 }
 
 fn evaluate(individual: &[f64]) -> f64 {
@@ -134,4 +146,22 @@ impl EvolutionStats {
             middle: Vec::new(),
         }
     }
+}
+
+fn create_csv(evol1: EvolutionStats, evol2: EvolutionStats) -> Result<(), Error> {
+    let mut writer = csv::Writer::from_path("datos_evoluciones.csv")?;
+    writer.write_record(["mejor1", "mejor2", "mediana1", "mediana2", "peor1", "peor2"])?;
+
+    for i in 0..(cmp::max(evol1.best.len(), evol2.best.len())) {
+        writer.serialize((
+            evol1.best.get(i).unwrap_or(&0f64),
+            evol2.best.get(i).unwrap_or(&0f64),
+            evol1.middle.get(i).unwrap_or(&0f64),
+            evol2.middle.get(i).unwrap_or(&0f64),
+            evol1.worst.get(i).unwrap_or(&0f64),
+            evol2.worst.get(i).unwrap_or(&0f64),
+        ))?;
+    }
+
+    Ok(())
 }
