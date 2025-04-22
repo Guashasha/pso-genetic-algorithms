@@ -22,6 +22,16 @@ fn main() {
     let genetic_stats = genetic::evolve(&mut generate_initial_population(), constraints);
     let pso_stats = pso::evolve(generate_initial_population());
 
+    println!(
+        "std deviation genetic {}",
+        statistical::standard_deviation(&genetic_stats.best, None)
+    );
+    println!(
+        "std deviation pso {}",
+        statistical::standard_deviation(&pso_stats.best, None)
+    );
+    println!("mean genetic {}", statistical::mean(&genetic_stats.best));
+    println!("mean pso {}", statistical::mean(&pso_stats.best));
     plotter::plot_comparison(&pso_stats, &genetic_stats);
     create_csv(pso_stats, genetic_stats).expect("Error al crear el archivo csv");
 }
